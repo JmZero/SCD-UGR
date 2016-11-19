@@ -1,0 +1,78 @@
+*** Productor-Consumidor ***
+
+	* Hacen falta dos hebras, una hebra lectora que ejecuta la función productor para leer y otra
+	hebra escritora que ejecuta la función escritora para escribir.
+
+	* He utilizado una cola FIFO. En esta cola se utilizan dos variables: primera_ocupada y
+	primera_libre, ambas inicializadas a 0:
+
+		- Primera_libre se utiliza al escribir en el vector. Cada vez que se mete un dato en el
+	vector, esta variable se incrementa en 1, pues evidentemente el vector ya ha almacenado
+	un valor y el siguiente valor se almacenará en la posición siguiente (si no está lleno).
+
+		- Primera_ocupada se utiliza al escribir. Aquí se va a consumir el dato del vector. Cada
+	vez que se consume (escribe) un dato, esta variable se incrementará en uno, pues
+	evidentemente ese dato ya se ha consumido y hay que consumir el siguiente.
+
+
+	* Tres semáforos, uno que controla cuándo se puede leer, otro que controla cuándo se puede
+	escribir y otro que controla que las dos funciones no accedan al vector a la vez.
+
+		- Semáforo puede_escribir: se inicializa al tamaño del vector. En la función productor se
+	utiliza la instrucción wait, pues lo que controla es que los valores producidos se
+	almacenen en el vector mientras haya espacio. Esta es la razón por la cual se inicializa al
+	tamaño del vector. Cada vez que se mete un dato en el vector, el valor del semáforo
+	decrementa en uno, de tal forma que cuando el vector está lleno, la siguiente vez que se
+	quiera meter un dato en el vector la instrucción wait estará a 0 con lo cual el proceso
+	quedará bloqueado y obviamente no se podrá acceder al vector.
+
+		En la función consumidor se utiliza la instrucción post de este semáforo. Esto quiere
+	decir que mientras el semáforo sea distinto de 0, se va a mostrar en pantalla el dato
+	correspondiente de acuerdo con la variable primera_ocupada. Si el semáforo está en 0,
+	significaría que ya se han mostrado todos los valores que contenía el vector y habría que
+	esperar a que se almacenara otro valor en el vector.
+
+		- Semáforo puede_leer: se inicializa a 0. En la función productor se tiene la instrucción
+	post de este semáforo. Cada vez que se almacena un dato en el vector, este semáforo se
+	incrementa en 1, pues esto quiere decir que posteriormente en la función consumidor que
+	contiene la instrucción post del semáforo el semáforo sería distinto de 0 y mostraría en la
+	pantalla el dato correspondiente de acuerdo con la cola FIFO.
+
+		- Semáforo mutex: este semáforo se inicializa a 1 y simplemente sirve para que la función
+	consumidor y función productor no accedan al vector a la misma vez. En ambas
+	funciones la instrucción wait está antes de acceder al vector y la instrucción post está
+	después de acceder al vector. Si al hacer el wait el semáforo está 0, significa que el
+	vector está siendo utilizado por la otra función y cuando esta termine el semáforo pasará
+	a 1, con lo cual ya podrá utilizarse el vector en la función que estaba bloqueada.
+
+*** El problema de los fumadores ***
+
+	* Se utilizan 4 hebras: una hebra que ejecuta la función del estanquero y 3 hebras que ejecutan
+	la función del fumador dependiendo del ingrediente que el estanquero ofrezca.
+	Así mismo, habrá 4 semáforos. 1 semáforo para el estanquero y otros 3 semáforos para cada
+	fumador. El semáforo del estanquero se inicializa a 1 porque tiene que estar desbloqueado
+	para poder ofrecer un ingrediente. Los semáforos de los fumadores se inicializan a 0 porque
+	no pueden fumar hasta que el estanquero ponga el ingrediente correspondiente.
+
+		- Semáforo estanquero: en la función estanquero se tiene la instrucción wait de este
+	semáforo. Si está a 1 como inicialmente se ha iniciado, significa que el estanquero puede
+	poner un ingrediente sobre el mostrador. Si está a 0, significa que el estanquero ya ha
+	puesto un ingrediente en el mostrador y tiene que esperar a que el fumador
+	correspondiente lo coja para poder poner otro, es decir, se bloquea el proceso.
+
+	En la función de los fumadores se tiene la instrucción post de este semáforo. Si el
+	semáforo es distinto de 0, significa que el fumador correspondiente puede comenzar a
+	fumar. Si es 0, el semáforo se incrementa en 1 y quiere decir que el estanquero ya puede
+	poner otro ingrediente sobre el mostrador.
+
+		- Semáforo fumadores: en la función del estanquero se tiene la instrucción post de este
+	semáforo. Si el semáforo está a 0 como inicialmente se ha inicializado, significa que el
+	fumador aún no ha cogido del mostrador el ingrediente y no puede fumar aún. Si el
+	semáforo está a un valor distinto de 0 significa que el estanquero ya ha puesto un
+	ingrediente en el mostrador y el fumador correspondiente puede comenzar a fumar.
+
+	En la función del fumador se tiene la instrucción wait de este semáforo. Si el valor del
+	semáforo es 0 significa que el fumador aún no ha comenzado a fumar pues no tiene el
+	ingrediente que le falta. Si es distinto de 0, significa que el estanquero ha puesto el
+	ingrediente y ya puede empezar a fumar.
+
