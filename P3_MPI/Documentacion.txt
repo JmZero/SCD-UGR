@@ -1,0 +1,142 @@
+** Productor-Consumidor **
+
+1. Describe qué cambios has realizado sobre el programa de partida y el propósito de dichos cambios.
+	• Ahora hay 5 productores, entonces hay que cambiar el bucle for del productor ya que ahora no hará
+20 iteraciones para producir 20 valores, ahora cada productor producirá 4 valores.
+	• En el consumidor pasa algo similar al productor. Ahora hay 4 consumidores, entonces el bucle for ya
+no consumirá 20 valores (20 iteraciones). Cada consumidor consumirá 5 valores.
+	• Como ahora hay más productores y consumidores, asigno el tag 0 para saber que el proceso es
+productor y el tag 1 para saber que el proceso es consumidor.
+	• En el Buffer se recibirán peticiones de cualquier proceso productor o consumidor
+(MPI_ANY_SOURCE), según sea el caso
+
+3. Incluye un listado parcial de la salida del programa
+Productor 3 produce valor 0
+Productor 4 produce valor 0
+Productor Productor 2 produce valor 0
+0 produce valor 0
+Productor 1 produce valor 0
+Productor 3 produce valor 1
+Buffer recibe 0 de Productor 0
+Buffer envía Consumidor 9 recibe valor 0 de Buffer
+0 a Consumidor 1
+Buffer recibe Productor 4 produce valor 1
+0 de Productor 0
+Buffer envía 0 a Consumidor 1
+Consumidor 7 recibe valor 0 de Buffer
+Buffer recibe 0 de Productor 0
+Productor 2 produce valor 1
+Buffer envía 0 a Consumidor 1
+Consumidor 8 recibe valor 0 de Buffer
+Buffer recibe 0 de Productor 0
+Productor 0 produce valor 1
+Buffer envía 0 a Consumidor 1
+Consumidor 6 recibe valor 0 de Buffer
+Productor 1 produce valor 1
+Buffer recibe 0 de Productor 0
+Buffer envía 0 a Consumidor 1
+Consumidor 9 recibe valor 0 de Buffer
+Productor 3 produce valor 2
+Buffer recibe 1 de Productor 0
+Buffer envía 1 a Consumidor 1
+
+** Filósofos **
+
+1. Describe los aspectos más destacados de tu solución al problema de los filósofos, la situación que
+conduce al interbloqueo y tu solución al problema del interbloqueo.
+	• La situación de interbloqueo se produce cuando todos los filósofos solicitan el tenedor izquierdo, ya
+que ninguno soltaría el tenedor y por lo tanto ningún filósofo podría coger su tenedor derecho. Para
+ello, un filósofo (el filósofo 0, por ejemplo) cogería primero el tenedor derecho y luego el izquierdo.
+
+	• La función del filósofo tiene que calcular el número del tenedor izquierdo y derecho, enviar dos
+peticiones al tenedor (he elegido el tag 0) y comer. Una vez come, envía otras dos mensajes al
+tenedor para indicar que va a soltar los tenedores (he elegido el tag 1). Una vez soltados, el filósofo
+se pone a pensar.
+
+	• La función del tenedor tiene que esperar un mensaje cualquiera que tenga el tag 0, que significa que
+un filósofo a pedido el tenedor. A continuación, el tenedor recibe la petición de un filósofo y le
+ofrece el tenedor y espera a que el mismo filósofo le envíe otra petición del otro tenedor.
+
+3. Incluye un listado parcial de la salida de este programa.
+Filosofo 0 solicita tenedor derecho 9
+Filosofo 2 solicita tenedor izquierdo 3
+Filosofo 2 coge tenedor derecho 1
+Filosofo 4 solicita tenedor izquierdo 5
+Filosofo 4 coge tenedor derecho 3
+Filosofo 6 solicita tenedor izquierdo 7
+Tenedor 3 recibe petición de 2
+Tenedor 5 recibe petición de 4
+Filosofo 0 coge tenedor izquierdo 1
+Filosofo 0 COMIENDO
+Tenedor 1 recibe petición de 0
+Tenedor 9 recibe petición de 0
+Filosofo 6 coge tenedor derecho 5
+Tenedor 7 recibe petición de 6
+Filosofo 8 solicita tenedor izquierdo 9
+Filosofo 0 suelta tenedor izquierdo 1
+Filosofo 0 suelta tenedor derecho 9
+Filosofo 0 PENSANDO
+Tenedor 1 recibe liberación de 0
+Tenedor 1 recibe petición de 2
+Tenedor 9 recibe liberación de 0
+Tenedor 9 recibe petición de 8
+Filosofo 2 COMIENDO
+Filosofo 8 coge tenedor derecho 7
+Tenedor 1 recibe liberación de 2
+Filosofo 2 suelta tenedor izquierdo 3
+Filosofo 2 suelta tenedor derecho 1
+Filosofo 2 PENSANDO
+Tenedor 3 recibe liberación de 2
+Tenedor 3 recibe petición de 4
+Filosofo 4 COMIENDO
+
+** Filósofos con camarero **
+
+1.Describe tu solución al problema de los filósofos con camarero central.
+	• Ahora el filósofo primero manda un mensaje al camarero (proceso 10) con el tag 2 que indica que
+quiere sentarse en la mesa. Entonces el filósofo espera a que le llegue el mensaje del camarero
+confirmando que puede sentarse. Una vez sentado, manda un mensaje al tenedor para solicitar el
+tenedor izquierdo y luego coge el derecho. Cuando termina de comer, suelta los tenedores y envía un
+mensaje al camarero con el tag 3 que indica que quiere levantarse.
+
+	• El proceso del tenedor no cambia con respecto al anterior programa.
+
+	• El camarero espera la llegada de cualquier mensaje de cualquier filósofo. Si el mensaje que le llega
+contiene el tag 2 y no hay más de 4 filósofos sentados, el camarero recibe la petición del filósofo que
+quiere sentarse y el camarero le envía un mensaje aceptando su petición. Al contrario, si no hay más
+de 4 filósofos sentados pero el camarero recibe el tag 3, significa que el filósofo quiere levantarse de
+la mesa.
+
+3. Incluye un listado parcial de la salida de este programa
+Filosofo 0 solicita sentarse
+Filosofo 2 solicita sentarse
+Filosofo 2 se sienta en la mesa
+Filosofo 8 solicita sentarse
+Filosofo 2 solicita tenedor izquierdo 3
+El camarero le dice al filósofo 2 que puede sentarse en la mesa. Hay 1 filósofos sentados en la mesa
+Filosofo 0 se sienta en la mesa
+Filosofo 0 solicita tenedor izquierdo 1
+Filosofo 0 coge tenedor derecho 9
+Tenedor 1 recibe petición de 0
+Filosofo 8 se sienta en la mesa
+Filosofo 8 solicita tenedor izquierdo 9
+Filosofo 8 coge tenedor derecho 7
+Tenedor 9 recibe petición de 8
+El camarero le dice al filósofo 8 que puede sentarse en la mesa. Hay 2 filósofos sentados en la mesa
+El camarero le dice al filósofo 0 que puede sentarse en la mesa. Hay 3 filósofos sentados en la mesa
+Filosofo 8 COMIENDO
+Tenedor 7 recibe petición de 8
+Filosofo 2 coge tenedor derecho 1
+Tenedor 3 recibe petición de 2
+Filosofo 6 solicita sentarse
+Filosofo 6 se sienta en la mesa
+Filosofo 6 solicita tenedor izquierdo 7
+El camarero le dice al filósofo 6 que puede sentarse en la mesa. Hay 4 filósofos sentados en la mesa
+Filosofo 4 solicita sentarse
+Filosofo 8 suelta tenedor izquierdo 9
+Filosofo 8 suelta tenedor derecho 7
+Tenedor 7 recibe liberación de 8
+Tenedor 7 recibe petición de Filosofo 8 se levanta de la mesa
+Tenedor 9 recibe liberación de 8
+Tenedor 9 recibe petición de 0
+Filosofo 0 COMIENDO
